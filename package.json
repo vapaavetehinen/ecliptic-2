@@ -1,0 +1,90 @@
+{
+  "name": "ecliptic-2",
+  "description": "Watchface showing the Sun, Moon and naked-eye planets along the ecliptic. A port of Ecliptic by Konstantin Beliakov, redrawn for larger Pebble displays.",
+  "author": "vapaavetehinen",
+  "contributors": [
+    "Konstantin Beliakov (author of the original Ecliptic watchface)"
+  ],
+  "version": "1.0.0",
+  "license": "GPL-3.0",
+  "keywords": [
+    "pebble-app",
+    "watchface",
+    "astronomy",
+    "planets",
+    "moon",
+    "ecliptic"
+  ],
+  "private": true,
+  "dependencies": {
+    "@rebble/clay": "^1.1.0"
+  },
+  "pebble": {
+    "displayName": "Ecliptic 2",
+    "uuid": "4d1abcbc-69c5-4346-ae22-d286f06bf81d",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery",
+      "flint",
+      "gabbro"
+    ],
+    "watchapp": {
+      "watchface": true
+    },
+    "messageKeys": [
+      "BgWhite",
+      "VibrateHourly",
+      "VibrateDisconnect",
+      "FlipHorizontal",
+      "StarsByBrightness",
+      "EdgeBuffer"
+    ],
+    "resources": {
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "MENU",
+          "file": "images/menu.png",
+          "menuIcon": true
+        },
+        {
+          "type": "bitmap",
+          "name": "MOON",
+          "file": "images/moon.png",
+          "targetPlatforms": [
+            "basalt",
+            "chalk",
+            "emery",
+            "gabbro"
+          ]
+        },
+        {
+          "type": "font",
+          "name": "FONT_TIME_54",
+          "file": "fonts/Montserrat-Bold.ttf",
+          "characterRegex": "[0-9:]",
+          "targetPlatforms": [
+            "emery"
+          ]
+        },
+        {
+          "type": "font",
+          "name": "FONT_TIME_64",
+          "file": "fonts/Montserrat-Bold.ttf",
+          "characterRegex": "[0-9:]",
+          "targetPlatforms": [
+            "gabbro"
+          ]
+        }
+      ]
+    },
+    "capabilities": [
+      "configurable"
+    ]
+  }
+}

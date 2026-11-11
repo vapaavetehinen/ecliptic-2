@@ -1,0 +1,11 @@
+Ecliptic 2 shows where the Sun, the Moon and the five naked-eye planets are along the ecliptic right now.
+
+The Sun is always at the top of the circle. Planets to its left are visible in the evening after sunset, planets to its right in the morning before sunrise, and planets near the bottom are up all night. The Moon is drawn with its current phase, and the zodiac constellations and brighter stars turn behind it all through the year.
+
+Legend: Sun (large disc), Mercury, Venus, Mars, Jupiter and Saturn (their astronomical symbols), and the Moon.
+
+Everything is calculated on the watch. No internet connection or location is needed.
+
+Settings: flip horizontally for the southern hemisphere, size stars by brightness, keep planets off the screen edge (Pebble Time 2), vibrate on the hour, vibrate when the phone disconnects, and a white background on black-and-white watches.
+
+This is a port of the Ecliptic watchface by Konstantin Beliakov, redrawn pixel for pixel for the Pebble Time 2 and Pebble Round 2 so that nothing is scaled, and kept true to the original on older watches. Open source under GPL-3.0.

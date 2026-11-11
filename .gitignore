@@ -1,0 +1,11 @@
+# Build output and caches (the waf lock file records the full shell environment)
+build/
+.lock-waf_*
+
+# Installed packages (restored by `pebble build` / npm install)
+node_modules/
+
+# Emulator and editor leftovers
+*.pyc
+__pycache__/
+.DS_Store

@@ -31,6 +31,7 @@ static void prv_settings_changed(void) {
   if (s_face_layer) {
     layout_init(layer_get_bounds(s_face_layer));
   }
+  sky_invalidate();
   prv_redraw();
 }
 

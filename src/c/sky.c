@@ -37,15 +37,41 @@ static struct {
 static GBitmap *s_moon_bitmap;
 #endif
 
+// Screen positions of the constellation line ends (two per line) and the
+// stars. Projecting them is most of the work of a redraw, and the result
+// only changes with the Sun's longitude, the layout or the flip setting, so
+// it is kept between redraws. Either array may be NULL if memory ran short;
+// those points are then projected on every redraw.
+static GPoint *s_line_points;
+#ifdef PBL_COLOR
+static GPoint *s_star_points;
+#endif
+static bool s_points_valid;
+
+void sky_invalidate(void) {
+  s_points_valid = false;
+}
+
 void sky_init(void) {
   s_sky.moon_date = -1e9;
   s_sky.planets_date = -1e9;
+  s_line_points = malloc(CONST_LINE_COUNT * 2 * sizeof(GPoint));
+#ifdef PBL_COLOR
+  s_star_points = malloc(STAR_COUNT * sizeof(GPoint));
+#endif
+  s_points_valid = false;
 #ifdef PBL_COLOR
   s_moon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_MOON);
 #endif
 }
 
 void sky_deinit(void) {
+  free(s_line_points);
+  s_line_points = NULL;
+#ifdef PBL_COLOR
+  free(s_star_points);
+  s_star_points = NULL;
+#endif
 #ifdef PBL_COLOR
   gbitmap_destroy(s_moon_bitmap);
 #endif
@@ -56,6 +82,7 @@ static void prv_update(double d) {
   const bool planets_due = my_fabs(d - s_sky.planets_date) > PLANETS_UPDATE_FREQ;
   if (moon_due || planets_due) {
     s_sky.sun_lon = getSunLongitude(d);
+    s_points_valid = false;
   }
   if (moon_due) {
     s_sky.moon_angle = rev(s_sky.sun_lon - getMoonLongitude(d));
@@ -91,12 +118,45 @@ static GPoint prv_sky_point(float angle, float lat) {
                 my_rint(l->center.y - cosd(angle) * rad));
 }
 
+// end is 0 or 1.
+static GPoint prv_line_point(int line, int end) {
+  const ConstLine *c = &CONST_LINES[line];
+  return end == 0 ? prv_sky_point(s_sky.sun_lon - c->lon1 / 100.0f, c->lat1 / 100.0f)
+                  : prv_sky_point(s_sky.sun_lon - c->lon2 / 100.0f, c->lat2 / 100.0f);
+}
+
+#ifdef PBL_COLOR
+static GPoint prv_star_point(int star) {
+  const Star *s = &STARS[star];
+  return prv_sky_point(s_sky.sun_lon - s->lon / 100.0f, s->lat / 100.0f);
+}
+#endif
+
+// Brings the kept points up to date. Call after prv_update.
+static void prv_project_points(void) {
+  if (s_points_valid) {
+    return;
+  }
+  if (s_line_points) {
+    for (int i = 0; i < CONST_LINE_COUNT * 2; i++) {
+      s_line_points[i] = prv_line_point(i / 2, i % 2);
+    }
+  }
+#ifdef PBL_COLOR
+  if (s_star_points) {
+    for (int i = 0; i < STAR_COUNT; i++) {
+      s_star_points[i] = prv_star_point(i);
+    }
+  }
+#endif
+  s_points_valid = true;
+}
+
 static void prv_draw_const_lines(GContext *ctx) {
   graphics_context_set_stroke_color(ctx, CONST_LINE_COLOR);
   for (int i = 0; i < CONST_LINE_COUNT; i++) {
-    const ConstLine *c = &CONST_LINES[i];
-    GPoint a = prv_sky_point(s_sky.sun_lon - c->lon1 / 100.0f, c->lat1 / 100.0f);
-    GPoint b = prv_sky_point(s_sky.sun_lon - c->lon2 / 100.0f, c->lat2 / 100.0f);
+    GPoint a = s_line_points ? s_line_points[2 * i] : prv_line_point(i, 0);
+    GPoint b = s_line_points ? s_line_points[2 * i + 1] : prv_line_point(i, 1);
     graphics_draw_line(ctx, a, b);
   }
 }
@@ -116,7 +176,7 @@ static GColor prv_star_colour(uint8_t colour) {
 static void prv_draw_stars(GContext *ctx) {
   for (int i = 0; i < STAR_COUNT; i++) {
     const Star *s = &STARS[i];
-    GPoint p = prv_sky_point(s_sky.sun_lon - s->lon / 100.0f, s->lat / 100.0f);
+    GPoint p = s_star_points ? s_star_points[i] : prv_star_point(i);
     GColor colour = prv_star_colour(s->colour);
     graphics_context_set_stroke_color(ctx, colour);
     if (g_settings.stars_by_brightness) {
@@ -224,6 +284,7 @@ void sky_draw(GContext *ctx) {
   const double d = getDayFrom2000();
 #endif
   prv_update(d);
+  prv_project_points();
 
   graphics_context_set_antialiased(ctx, false);
   graphics_context_set_stroke_width(ctx, 1);
